@@ -1,0 +1,610 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>PMO Command Centre</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600&family=DM+Mono:wght@400;500&display=swap');
+  *{box-sizing:border-box;margin:0;padding:0}
+  :root{
+    --bg:#0f1117;--bg2:#161b27;--bg3:#1e2535;--bg4:#252d40;
+    --border:#2a3348;--border2:#374057;
+    --text:#e8ecf4;--text2:#8d9ab5;--text3:#5a6882;
+    --blue:#4f8ef7;--blue2:#1a3a7a;--blue3:#2a4f9f;
+    --green:#3dd68c;--green2:#0f3d28;--green3:#1a5c3e;
+    --amber:#f5a623;--amber2:#3d2800;--amber3:#5c3e00;
+    --red:#f05252;--red2:#3d0f0f;--red3:#5c1a1a;
+    --purple:#a78bfa;--purple2:#2d1d5c;
+    --teal:#2dd4bf;
+    --radius:8px;--radius2:12px;
+  }
+  body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;font-size:14px;line-height:1.5}
+  .app{display:flex;height:100vh;overflow:hidden}
+  .sidebar{width:220px;min-width:220px;background:var(--bg2);border-right:1px solid var(--border);display:flex;flex-direction:column;overflow-y:auto}
+  .main{flex:1;overflow-y:auto;background:var(--bg)}
+  .brand{padding:20px 18px 16px;border-bottom:1px solid var(--border)}
+  .brand-name{font-size:15px;font-weight:600;color:var(--text)}
+  .brand-sub{font-size:11px;color:var(--text3);margin-top:2px;font-family:'DM Mono',monospace;letter-spacing:.5px}
+  .nav-section{padding:14px 10px 6px}
+  .nav-label{font-size:10px;font-weight:500;letter-spacing:1px;color:var(--text3);padding:0 8px;margin-bottom:6px;text-transform:uppercase}
+  .nav-item{display:flex;align-items:center;gap:10px;padding:8px 10px;border-radius:6px;cursor:pointer;color:var(--text2);font-size:13px;font-weight:400;transition:all .15s;border:none;background:none;width:100%;text-align:left;font-family:'DM Sans',sans-serif}
+  .nav-item:hover{background:var(--bg3);color:var(--text)}
+  .nav-item.active{background:var(--blue2);color:var(--blue);font-weight:500}
+  .badge{margin-left:auto;background:var(--red);color:#fff;font-size:10px;font-weight:600;border-radius:10px;padding:1px 6px;min-width:18px;text-align:center}
+  .badge-warn{background:var(--amber);color:#000}
+  .sidebar-footer{margin-top:auto;padding:14px;border-top:1px solid var(--border)}
+  .user-chip{display:flex;align-items:center;gap:10px}
+  .avatar{width:30px;height:30px;border-radius:50%;background:var(--blue2);display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:600;color:var(--blue)}
+  .user-name{font-size:12px;font-weight:500;color:var(--text)}
+  .user-role{font-size:11px;color:var(--text3)}
+  .page-header{padding:20px 28px 16px;display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid var(--border)}
+  .page-title{font-size:18px;font-weight:600;color:var(--text)}
+  .page-sub{font-size:12px;color:var(--text3);margin-top:2px}
+  .header-actions{display:flex;align-items:center;gap:10px}
+  .btn{padding:7px 14px;border-radius:6px;font-size:12px;font-weight:500;cursor:pointer;border:1px solid var(--border2);background:var(--bg3);color:var(--text);transition:all .15s;font-family:'DM Sans',sans-serif}
+  .btn:hover{background:var(--bg4);border-color:var(--blue)}
+  .btn-primary{background:var(--blue);border-color:var(--blue);color:#fff}
+  .btn-primary:hover{background:#3a7ae0}
+  .period-badge{font-size:11px;font-family:'DM Mono',monospace;color:var(--text3);background:var(--bg3);padding:4px 10px;border-radius:5px;border:1px solid var(--border)}
+  .content{padding:22px 28px 40px}
+  .stat-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-bottom:22px}
+  .stat-card{background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius2);padding:16px 18px;position:relative;overflow:hidden;cursor:pointer;transition:border-color .15s}
+  .stat-card:hover{border-color:var(--border2)}
+  .stat-card::before{content:'';position:absolute;top:0;left:0;right:0;height:2px}
+  .stat-card.blue::before{background:var(--blue)}
+  .stat-card.green::before{background:var(--green)}
+  .stat-card.amber::before{background:var(--amber)}
+  .stat-card.red::before{background:var(--red)}
+  .stat-label{font-size:11px;color:var(--text3);font-weight:500;letter-spacing:.3px;text-transform:uppercase;margin-bottom:8px}
+  .stat-value{font-size:28px;font-weight:600;color:var(--text);line-height:1;font-family:'DM Mono',monospace}
+  .stat-meta{font-size:11px;color:var(--text3);margin-top:6px;display:flex;align-items:center;gap:4px}
+  .delta{font-size:11px;font-weight:500;padding:2px 6px;border-radius:4px}
+  .delta.up{background:var(--green2);color:var(--green)}
+  .delta.down{background:var(--red2);color:var(--red)}
+  .delta.flat{background:var(--bg3);color:var(--text3)}
+  .two-col{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:22px}
+  .three-col{display:grid;grid-template-columns:2fr 1fr;gap:16px;margin-bottom:22px}
+  .panel{background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius2);overflow:hidden}
+  .panel-head{padding:14px 18px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between}
+  .panel-title{font-size:13px;font-weight:600;color:var(--text)}
+  .panel-body{padding:16px 18px}
+  .ptable{width:100%;border-collapse:collapse}
+  .ptable th{font-size:10px;font-weight:500;color:var(--text3);text-transform:uppercase;letter-spacing:.5px;padding:6px 10px;border-bottom:1px solid var(--border);text-align:left}
+  .ptable td{padding:10px 10px;border-bottom:1px solid var(--border);font-size:12px;color:var(--text2);vertical-align:middle}
+  .ptable tr:last-child td{border-bottom:none}
+  .ptable tr:hover td{background:var(--bg3)}
+  .proj-name{font-weight:500;color:var(--text);font-size:13px}
+  .proj-id{font-size:10px;color:var(--text3);font-family:'DM Mono',monospace}
+  .chip{display:inline-flex;align-items:center;gap:4px;font-size:10px;font-weight:600;padding:3px 8px;border-radius:5px;letter-spacing:.2px;text-transform:uppercase}
+  .chip::before{content:'';width:5px;height:5px;border-radius:50%;flex-shrink:0}
+  .chip.on-track{background:var(--green2);color:var(--green)}.chip.on-track::before{background:var(--green)}
+  .chip.at-risk{background:var(--amber2);color:var(--amber)}.chip.at-risk::before{background:var(--amber)}
+  .chip.delayed{background:var(--red2);color:var(--red)}.chip.delayed::before{background:var(--red)}
+  .chip.complete{background:#1a2a1a;color:#6ee7b7}.chip.complete::before{background:#6ee7b7}
+  .chip.planning{background:var(--bg3);color:var(--text3)}.chip.planning::before{background:var(--text3)}
+  .prog-wrap{width:80px;height:5px;background:var(--bg4);border-radius:3px;overflow:hidden}
+  .prog-fill{height:100%;border-radius:3px}
+  .prog-fill.green{background:var(--green)}.prog-fill.amber{background:var(--amber)}.prog-fill.red{background:var(--red)}.prog-fill.blue{background:var(--blue)}
+  .raid-tabs{display:flex;gap:2px;padding:14px 18px 0;border-bottom:1px solid var(--border)}
+  .raid-tab{padding:8px 14px;font-size:12px;font-weight:500;cursor:pointer;color:var(--text3);border-bottom:2px solid transparent;margin-bottom:-1px;transition:all .15s}
+  .raid-tab.active{color:var(--blue);border-bottom-color:var(--blue)}
+  .raid-tab:hover:not(.active){color:var(--text)}
+  .tab-count{display:inline-flex;align-items:center;justify-content:center;width:16px;height:16px;border-radius:50%;font-size:9px;font-weight:700;margin-left:5px;background:var(--bg3)}
+  .raid-tab.active .tab-count{background:var(--blue2);color:var(--blue)}
+  .raid-list{display:flex;flex-direction:column;gap:8px;padding:14px 18px}
+  .raid-card{background:var(--bg3);border:1px solid var(--border);border-radius:var(--radius);padding:12px 14px;border-left:3px solid;cursor:pointer}
+  .raid-card.high{border-left-color:var(--red)}
+  .raid-card.medium{border-left-color:var(--amber)}
+  .raid-card.low{border-left-color:var(--green)}
+  .raid-card.open{border-left-color:var(--blue)}
+  .raid-meta{display:flex;align-items:center;justify-content:space-between;margin-bottom:5px}
+  .raid-title{font-size:12px;font-weight:500;color:var(--text)}
+  .raid-footer{display:flex;align-items:center;justify-content:space-between;margin-top:8px}
+  .raid-due{font-size:10px;font-family:'DM Mono',monospace;color:var(--text3)}
+  .resource-row{display:flex;align-items:center;gap:10px;padding:10px 0;border-bottom:1px solid var(--border)}
+  .resource-row:last-child{border-bottom:none}
+  .res-avatar{width:28px;height:28px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:600;flex-shrink:0}
+  .res-info{flex:1;min-width:0}
+  .res-name{font-size:12px;font-weight:500;color:var(--text)}
+  .res-role{font-size:10px;color:var(--text3)}
+  .res-util{width:120px;text-align:right}
+  .util-pct{font-size:12px;font-weight:600;font-family:'DM Mono',monospace}
+  .util-bar{width:90px;height:4px;background:var(--bg4);border-radius:2px;overflow:hidden;margin-top:4px;margin-left:auto}
+  .util-fill{height:100%;border-radius:2px}
+  .gantt-row{display:flex;align-items:center;gap:10px;padding:8px 0;border-bottom:1px solid var(--border);font-size:11px}
+  .gantt-row:last-child{border-bottom:none}
+  .gantt-label{width:110px;color:var(--text2);font-size:11px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;flex-shrink:0}
+  .gantt-track{flex:1;height:16px;background:var(--bg4);border-radius:4px;position:relative;overflow:hidden}
+  .gantt-bar{position:absolute;height:100%;border-radius:4px;display:flex;align-items:center;justify-content:center;font-size:9px;font-weight:600;color:#fff;letter-spacing:.2px}
+  .gantt-pct{width:36px;text-align:right;font-size:10px;font-family:'DM Mono',monospace;color:var(--text3)}
+  .milestone-row{display:flex;align-items:flex-start;gap:12px;padding:10px 0;border-bottom:1px solid var(--border)}
+  .milestone-row:last-child{border-bottom:none}
+  .ms-icon{width:28px;height:28px;border-radius:6px;display:flex;align-items:center;justify-content:center;font-size:13px;flex-shrink:0;margin-top:2px}
+  .ms-title{font-size:12px;font-weight:500;color:var(--text)}
+  .ms-proj{font-size:10px;color:var(--text3);margin-top:2px}
+  .ms-date{font-size:10px;font-family:'DM Mono',monospace;color:var(--text3);white-space:nowrap;margin-top:1px}
+  .kpi-row{display:flex;align-items:center;gap:12px;padding:10px 0;border-bottom:1px solid var(--border)}
+  .kpi-row:last-child{border-bottom:none}
+  .kpi-name{font-size:12px;color:var(--text2);width:160px;flex-shrink:0}
+  .kpi-track{flex:1;height:8px;background:var(--bg4);border-radius:4px;overflow:hidden}
+  .kpi-fill{height:100%;border-radius:4px}
+  .kpi-val{font-size:12px;font-weight:600;font-family:'DM Mono',monospace;color:var(--text);width:40px;text-align:right;flex-shrink:0}
+  .view{display:none}
+  .view.active{display:block}
+  .raid-section{display:none}
+  .raid-section.active{display:block}
+  ::-webkit-scrollbar{width:5px;height:5px}
+  ::-webkit-scrollbar-track{background:transparent}
+  ::-webkit-scrollbar-thumb{background:var(--border2);border-radius:3px}
+  .overdue{color:var(--red);font-size:10px;font-weight:500}
+  .donut-wrap{display:flex;align-items:center;gap:16px;padding:14px 18px}
+  .donut-legend{display:flex;flex-direction:column;gap:6px}
+  .legend-row{display:flex;align-items:center;gap:7px;font-size:11px;color:var(--text2)}
+  .legend-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0}
+  .health-rows{padding:14px 18px;display:flex;flex-direction:column;gap:10px}
+  .health-item{display:flex;align-items:center;justify-content:space-between}
+  .health-left{display:flex;align-items:center;gap:8px;font-size:12px;color:var(--text2)}
+  .health-dot{width:8px;height:8px;border-radius:50%}
+  .modal-bg{position:fixed;inset:0;background:rgba(0,0,0,.6);display:none;align-items:center;justify-content:center;z-index:100}
+  .modal-bg.open{display:flex}
+  .modal{background:var(--bg2);border:1px solid var(--border2);border-radius:14px;width:480px;max-width:95vw;padding:24px;position:relative;max-height:90vh;overflow-y:auto}
+  .modal-title{font-size:15px;font-weight:600;margin-bottom:18px;color:var(--text)}
+  .form-field{margin-bottom:14px}
+  .form-label{font-size:11px;color:var(--text3);margin-bottom:5px;font-weight:500;text-transform:uppercase;letter-spacing:.3px;display:block}
+  .form-input{width:100%;background:var(--bg3);border:1px solid var(--border2);border-radius:6px;color:var(--text);padding:8px 12px;font-size:13px;font-family:'DM Sans',sans-serif;outline:none;transition:border-color .15s}
+  .form-input:focus{border-color:var(--blue)}
+  textarea.form-input{resize:vertical}
+  .form-select{width:100%;background:var(--bg3);border:1px solid var(--border2);border-radius:6px;color:var(--text);padding:8px 12px;font-size:13px;font-family:'DM Sans',sans-serif;outline:none;cursor:pointer}
+  .modal-actions{display:flex;justify-content:flex-end;gap:8px;margin-top:20px}
+  .modal-close{position:absolute;top:18px;right:18px;background:none;border:none;color:var(--text3);cursor:pointer;font-size:20px;line-height:1}
+  .notes-list{display:flex;flex-direction:column;gap:8px;padding:16px 28px}
+  .note-card{background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius);padding:14px 16px}
+  .note-header{display:flex;justify-content:space-between;margin-bottom:4px}
+  .note-author{font-size:11px;font-weight:600;color:var(--blue)}
+  .note-time{font-size:10px;font-family:'DM Mono',monospace;color:var(--text3)}
+  .note-text{font-size:12px;color:var(--text2);line-height:1.6;margin-top:6px}
+  .tl-row{display:flex;gap:12px;padding-bottom:14px}
+  .tl-line{display:flex;flex-direction:column;align-items:center;width:20px;flex-shrink:0}
+  .tl-dot{width:10px;height:10px;border-radius:50%;flex-shrink:0;margin-top:4px}
+  .tl-vert{flex:1;width:1px;background:var(--border);min-height:16px;margin-top:4px}
+  .tl-title{font-size:12px;font-weight:500;color:var(--text)}
+  .tl-meta{font-size:10px;color:var(--text3);margin-top:2px}
+  .alert-box{border-radius:6px;padding:10px 12px;margin-bottom:8px}
+  .alert-red{background:var(--red2);border:1px solid var(--red3)}
+  .alert-amber{background:var(--amber2);border:1px solid var(--amber3)}
+  .form-grid-2{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+</style>
+</head>
+<body>
+<div class="app">
+  <div class="sidebar">
+    <div class="brand">
+      <div class="brand-name">PMO Command</div>
+      <div class="brand-sub">Q2 2026 · PORTFOLIO</div>
+    </div>
+    <div class="nav-section">
+      <div class="nav-label">Overview</div>
+      <button class="nav-item active" onclick="showView('dashboard',this)">◈ &nbsp;Dashboard</button>
+      <button class="nav-item" onclick="showView('projects',this)">⬡ &nbsp;Projects <span class="badge badge-warn">3</span></button>
+      <button class="nav-item" onclick="showView('executive',this)">◉ &nbsp;Executive View</button>
+    </div>
+    <div class="nav-section">
+      <div class="nav-label">Tracking</div>
+      <button class="nav-item" onclick="showView('raid',this)">⚑ &nbsp;RAID Log <span class="badge">5</span></button>
+      <button class="nav-item" onclick="showView('resources',this)">⊕ &nbsp;Resources</button>
+      <button class="nav-item" onclick="showView('milestones',this)">◇ &nbsp;Milestones</button>
+    </div>
+    <div class="nav-section">
+      <div class="nav-label">Governance</div>
+      <button class="nav-item" onclick="showView('decisions',this)">⊞ &nbsp;Decision Log</button>
+      <button class="nav-item" onclick="showView('notes',this)">≡ &nbsp;PMO Notes</button>
+    </div>
+    <div class="sidebar-footer">
+      <div class="user-chip">
+        <div class="avatar">SP</div>
+        <div><div class="user-name">Sarah P.</div><div class="user-role">Programme Director</div></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="main">
+
+    <!-- DASHBOARD -->
+    <div id="view-dashboard" class="view active">
+      <div class="page-header">
+        <div><div class="page-title">Portfolio Dashboard</div><div class="page-sub">Last updated: Thu 9 Apr 2026</div></div>
+        <div class="header-actions">
+          <span class="period-badge">Q2 2026</span>
+          <button class="btn btn-primary" onclick="openModal('add-project')">+ Add Project</button>
+        </div>
+      </div>
+      <div class="content">
+        <div class="stat-grid">
+          <div class="stat-card blue" onclick="showView('projects',null)"><div class="stat-label">Active Projects</div><div class="stat-value">12</div><div class="stat-meta"><span class="delta up">↑ 2</span> from last quarter</div></div>
+          <div class="stat-card green"><div class="stat-label">On Track</div><div class="stat-value">7</div><div class="stat-meta"><span class="delta up">58%</span> portfolio health</div></div>
+          <div class="stat-card amber"><div class="stat-label">At Risk</div><div class="stat-value">3</div><div class="stat-meta"><span class="delta down">↑ 1</span> since last week</div></div>
+          <div class="stat-card red"><div class="stat-label">Open Issues</div><div class="stat-value">18</div><div class="stat-meta"><span class="delta flat">5 critical</span> need action</div></div>
+        </div>
+        <div class="three-col">
+          <div class="panel">
+            <div class="panel-head"><span class="panel-title">Project Portfolio</span><button class="btn" style="font-size:11px;padding:4px 10px" onclick="showView('projects',null)">View all →</button></div>
+            <table class="ptable">
+              <thead><tr><th>Project</th><th>PM</th><th>Status</th><th>Progress</th></tr></thead>
+              <tbody>
+                <tr><td><div class="proj-name">Customer Portal v3</div><div class="proj-id">PRJ-001</div></td><td style="color:var(--text);font-size:12px">A. Chen</td><td><span class="chip on-track">On Track</span></td><td><div style="display:flex;align-items:center;gap:6px"><div class="prog-wrap"><div class="prog-fill green" style="width:68%"></div></div><span style="font-size:10px;font-family:'DM Mono',monospace;color:var(--text3)">68%</span></div></td></tr>
+                <tr><td><div class="proj-name">ERP Migration</div><div class="proj-id">PRJ-002</div></td><td style="color:var(--text);font-size:12px">M. Rivera</td><td><span class="chip at-risk">At Risk</span></td><td><div style="display:flex;align-items:center;gap:6px"><div class="prog-wrap"><div class="prog-fill amber" style="width:41%"></div></div><span style="font-size:10px;font-family:'DM Mono',monospace;color:var(--text3)">41%</span></div></td></tr>
+                <tr><td><div class="proj-name">Data Platform</div><div class="proj-id">PRJ-003</div></td><td style="color:var(--text);font-size:12px">J. Kim</td><td><span class="chip on-track">On Track</span></td><td><div style="display:flex;align-items:center;gap:6px"><div class="prog-wrap"><div class="prog-fill green" style="width:82%"></div></div><span style="font-size:10px;font-family:'DM Mono',monospace;color:var(--text3)">82%</span></div></td></tr>
+                <tr><td><div class="proj-name">Security Audit</div><div class="proj-id">PRJ-004</div></td><td style="color:var(--text);font-size:12px">T. Osei</td><td><span class="chip delayed">Delayed</span></td><td><div style="display:flex;align-items:center;gap:6px"><div class="prog-wrap"><div class="prog-fill red" style="width:22%"></div></div><span style="font-size:10px;font-family:'DM Mono',monospace;color:var(--text3)">22%</span></div></td></tr>
+                <tr><td><div class="proj-name">Mobile App 2.0</div><div class="proj-id">PRJ-005</div></td><td style="color:var(--text);font-size:12px">L. Patel</td><td><span class="chip on-track">On Track</span></td><td><div style="display:flex;align-items:center;gap:6px"><div class="prog-wrap"><div class="prog-fill blue" style="width:55%"></div></div><span style="font-size:10px;font-family:'DM Mono',monospace;color:var(--text3)">55%</span></div></td></tr>
+                <tr><td><div class="proj-name">Infra Upgrade</div><div class="proj-id">PRJ-006</div></td><td style="color:var(--text);font-size:12px">N. Walsh</td><td><span class="chip planning">Planning</span></td><td><div style="display:flex;align-items:center;gap:6px"><div class="prog-wrap"><div class="prog-fill green" style="width:5%"></div></div><span style="font-size:10px;font-family:'DM Mono',monospace;color:var(--text3)">5%</span></div></td></tr>
+              </tbody>
+            </table>
+          </div>
+          <div style="display:flex;flex-direction:column;gap:16px">
+            <div class="panel">
+              <div class="panel-head"><span class="panel-title">Portfolio Health</span></div>
+              <div class="donut-wrap">
+                <svg width="80" height="80" viewBox="0 0 80 80">
+                  <circle cx="40" cy="40" r="30" fill="none" stroke="#1e2535" stroke-width="12"/>
+                  <circle cx="40" cy="40" r="30" fill="none" stroke="#3dd68c" stroke-width="12" stroke-dasharray="113 76" stroke-dashoffset="-23" stroke-linecap="round"/>
+                  <circle cx="40" cy="40" r="30" fill="none" stroke="#f5a623" stroke-width="12" stroke-dasharray="57 132" stroke-dashoffset="-136" stroke-linecap="round"/>
+                  <circle cx="40" cy="40" r="30" fill="none" stroke="#f05252" stroke-width="12" stroke-dasharray="19 170" stroke-dashoffset="-193" stroke-linecap="round"/>
+                  <text x="40" y="44" text-anchor="middle" fill="#e8ecf4" font-size="13" font-weight="600" font-family="DM Mono,monospace">58%</text>
+                </svg>
+                <div class="donut-legend">
+                  <div class="legend-row"><span class="legend-dot" style="background:var(--green)"></span>On Track (7)</div>
+                  <div class="legend-row"><span class="legend-dot" style="background:var(--amber)"></span>At Risk (3)</div>
+                  <div class="legend-row"><span class="legend-dot" style="background:var(--red)"></span>Delayed (2)</div>
+                  <div class="legend-row"><span class="legend-dot" style="background:var(--text3)"></span>Planning (1)</div>
+                  <div class="legend-row"><span class="legend-dot" style="background:#6ee7b7"></span>Complete (2)</div>
+                </div>
+              </div>
+            </div>
+            <div class="panel" style="flex:1">
+              <div class="panel-head"><span class="panel-title">Upcoming Milestones</span></div>
+              <div style="padding:0 18px">
+                <div class="milestone-row"><div class="ms-icon" style="background:var(--blue2)">🎯</div><div style="flex:1"><div class="ms-title">Portal UAT Sign-off</div><div class="ms-proj">PRJ-001</div></div><div class="ms-date">Apr 18</div></div>
+                <div class="milestone-row"><div class="ms-icon" style="background:var(--amber2)">⚠️</div><div style="flex:1"><div class="ms-title">ERP Phase 2 Go-Live</div><div class="ms-proj">PRJ-002</div></div><div class="ms-date" style="color:var(--amber)">Apr 22</div></div>
+                <div class="milestone-row"><div class="ms-icon" style="background:var(--green2)">✅</div><div style="flex:1"><div class="ms-title">Data Platform Launch</div><div class="ms-proj">PRJ-003</div></div><div class="ms-date">Apr 30</div></div>
+                <div class="milestone-row"><div class="ms-icon" style="background:var(--red2)">🔴</div><div style="flex:1"><div class="ms-title">Security Compliance Review</div><div class="ms-proj">PRJ-004</div></div><div class="ms-date" style="color:var(--red)">OVERDUE</div></div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="two-col">
+          <div class="panel">
+            <div class="panel-head"><span class="panel-title">Timeline Overview (Q2)</span></div>
+            <div style="padding:10px 18px 14px">
+              <div style="display:flex;gap:10px;margin-bottom:8px"><div style="width:110px;font-size:9px;color:var(--text3);text-transform:uppercase;letter-spacing:.5px">Project</div><div style="flex:1;display:flex;justify-content:space-between;font-size:9px;color:var(--text3);font-family:'DM Mono',monospace"><span>Apr</span><span>May</span><span>Jun</span><span>Jul</span></div><div style="width:36px"></div></div>
+              <div class="gantt-row"><div class="gantt-label">Customer Portal</div><div class="gantt-track"><div class="gantt-bar" style="left:0;width:55%;background:var(--green);opacity:.8">ACTIVE</div></div><div class="gantt-pct">68%</div></div>
+              <div class="gantt-row"><div class="gantt-label">ERP Migration</div><div class="gantt-track"><div class="gantt-bar" style="left:5%;width:75%;background:var(--amber);opacity:.8">ACTIVE</div></div><div class="gantt-pct">41%</div></div>
+              <div class="gantt-row"><div class="gantt-label">Data Platform</div><div class="gantt-track"><div class="gantt-bar" style="left:0;width:70%;background:var(--green);opacity:.8">ACTIVE</div></div><div class="gantt-pct">82%</div></div>
+              <div class="gantt-row"><div class="gantt-label">Security Audit</div><div class="gantt-track"><div class="gantt-bar" style="left:10%;width:80%;background:var(--red);opacity:.8">DELAYED</div></div><div class="gantt-pct">22%</div></div>
+              <div class="gantt-row"><div class="gantt-label">Mobile App 2.0</div><div class="gantt-track"><div class="gantt-bar" style="left:0;width:65%;background:var(--blue);opacity:.8">ACTIVE</div></div><div class="gantt-pct">55%</div></div>
+              <div class="gantt-row"><div class="gantt-label">Infra Upgrade</div><div class="gantt-track"><div class="gantt-bar" style="left:25%;width:65%;background:var(--text3);opacity:.5">PLANNING</div></div><div class="gantt-pct">5%</div></div>
+            </div>
+          </div>
+          <div class="panel">
+            <div class="panel-head"><span class="panel-title">Top Risks</span><button class="btn" style="font-size:11px;padding:4px 10px" onclick="showView('raid',null)">RAID Log →</button></div>
+            <div style="padding:0 18px">
+              <div class="milestone-row"><span class="chip at-risk" style="flex-shrink:0">HIGH</span><div style="flex:1;margin-left:8px"><div style="font-size:12px;font-weight:500;color:var(--text)">ERP vendor support expiring</div><div style="font-size:10px;color:var(--text3);margin-top:2px">Owner: M. Rivera · Due Apr 20</div></div></div>
+              <div class="milestone-row"><span class="chip delayed" style="flex-shrink:0">CRIT</span><div style="flex:1;margin-left:8px"><div style="font-size:12px;font-weight:500;color:var(--text)">Security audit resource gap</div><div style="font-size:10px;color:var(--text3);margin-top:2px">Owner: T. Osei · <span style="color:var(--red)">Overdue</span></div></div></div>
+              <div class="milestone-row"><span class="chip at-risk" style="flex-shrink:0">MED</span><div style="flex:1;margin-left:8px"><div style="font-size:12px;font-weight:500;color:var(--text)">Data migration dependency</div><div style="font-size:10px;color:var(--text3);margin-top:2px">Owner: J. Kim · Due Apr 25</div></div></div>
+              <div class="milestone-row"><span class="chip on-track" style="flex-shrink:0">LOW</span><div style="flex:1;margin-left:8px"><div style="font-size:12px;font-weight:500;color:var(--text)">Mobile API rate-limit risk</div><div style="font-size:10px;color:var(--text3);margin-top:2px">Owner: L. Patel · Due May 5</div></div></div>
+            </div>
+          </div>
+        </div>
+        <div class="panel">
+          <div class="panel-head"><span class="panel-title">Recent PMO Activity</span></div>
+          <div style="padding:14px 18px">
+            <div class="tl-row"><div class="tl-line"><div class="tl-dot" style="background:var(--red)"></div><div class="tl-vert"></div></div><div><div class="tl-title">Security Audit moved to Delayed — resource unavailability confirmed</div><div class="tl-meta">Today, 09:14 · T. Osei</div></div></div>
+            <div class="tl-row"><div class="tl-line"><div class="tl-dot" style="background:var(--amber)"></div><div class="tl-vert"></div></div><div><div class="tl-title">ERP Migration risk escalated to steering committee</div><div class="tl-meta">Yesterday, 16:32 · M. Rivera</div></div></div>
+            <div class="tl-row"><div class="tl-line"><div class="tl-dot" style="background:var(--green)"></div><div class="tl-vert"></div></div><div><div class="tl-title">Data Platform Phase 3 milestone completed ✓</div><div class="tl-meta">Apr 8, 11:05 · J. Kim</div></div></div>
+            <div class="tl-row"><div class="tl-line"><div class="tl-dot" style="background:var(--blue)"></div><div class="tl-vert"></div></div><div><div class="tl-title">PRJ-006 Infra Upgrade initiated in PMO</div><div class="tl-meta">Apr 7, 14:00 · Sarah P.</div></div></div>
+            <div class="tl-row"><div class="tl-line"><div class="tl-dot" style="background:var(--purple)"></div></div><div><div class="tl-title">Quarterly portfolio review deck submitted to CTO</div><div class="tl-meta">Apr 7, 09:00 · Sarah P.</div></div></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- PROJECTS -->
+    <div id="view-projects" class="view">
+      <div class="page-header">
+        <div><div class="page-title">Project Register</div><div class="page-sub">Source of truth · All active projects</div></div>
+        <div class="header-actions"><button class="btn btn-primary" onclick="openModal('add-project')">+ New Project</button></div>
+      </div>
+      <div class="content">
+        <div class="panel">
+          <table class="ptable">
+            <thead><tr><th>ID</th><th>Project Name</th><th>PM</th><th>Sponsor</th><th>Start</th><th>End</th><th>Budget</th><th>Status</th><th>Progress</th></tr></thead>
+            <tbody>
+              <tr><td class="proj-id">PRJ-001</td><td><div class="proj-name">Customer Portal v3</div></td><td style="font-size:12px;color:var(--text)">A. Chen</td><td style="font-size:11px;color:var(--text3)">CPO</td><td style="font-size:10px;font-family:'DM Mono',monospace;color:var(--text3)">Jan 26</td><td style="font-size:10px;font-family:'DM Mono',monospace;color:var(--text3)">May 26</td><td style="font-size:11px;font-family:'DM Mono',monospace;color:var(--text)">£820K</td><td><span class="chip on-track">On Track</span></td><td><div style="display:flex;align-items:center;gap:6px"><div class="prog-wrap"><div class="prog-fill green" style="width:68%"></div></div><span style="font-size:10px;font-family:'DM Mono',monospace;color:var(--text3)">68%</span></div></td></tr>
+              <tr><td class="proj-id">PRJ-002</td><td><div class="proj-name">ERP Migration</div></td><td style="font-size:12px;color:var(--text)">M. Rivera</td><td style="font-size:11px;color:var(--text3)">COO</td><td style="font-size:10px;font-family:'DM Mono',monospace;color:var(--text3)">Feb 26</td><td style="font-size:10px;font-family:'DM Mono',monospace;color:var(--amber)">Jun 26</td><td style="font-size:11px;font-family:'DM Mono',monospace;color:var(--text)">£1.1M</td><td><span class="chip at-risk">At Risk</span></td><td><div style="display:flex;align-items:center;gap:6px"><div class="prog-wrap"><div class="prog-fill amber" style="width:41%"></div></div><span style="font-size:10px;font-family:'DM Mono',monospace;color:var(--text3)">41%</span></div></td></tr>
+              <tr><td class="proj-id">PRJ-003</td><td><div class="proj-name">Data Platform</div></td><td style="font-size:12px;color:var(--text)">J. Kim</td><td style="font-size:11px;color:var(--text3)">CTO</td><td style="font-size:10px;font-family:'DM Mono',monospace;color:var(--text3)">Nov 25</td><td style="font-size:10px;font-family:'DM Mono',monospace;color:var(--text3)">Apr 26</td><td style="font-size:11px;font-family:'DM Mono',monospace;color:var(--text)">£650K</td><td><span class="chip on-track">On Track</span></td><td><div style="display:flex;align-items:center;gap:6px"><div class="prog-wrap"><div class="prog-fill green" style="width:82%"></div></div><span style="font-size:10px;font-family:'DM Mono',monospace;color:var(--text3)">82%</span></div></td></tr>
+              <tr><td class="proj-id">PRJ-004</td><td><div class="proj-name">Security Audit</div></td><td style="font-size:12px;color:var(--text)">T. Osei</td><td style="font-size:11px;color:var(--text3)">CISO</td><td style="font-size:10px;font-family:'DM Mono',monospace;color:var(--text3)">Mar 26</td><td style="font-size:10px;font-family:'DM Mono',monospace;color:var(--red)">Jun 26</td><td style="font-size:11px;font-family:'DM Mono',monospace;color:var(--text)">£280K</td><td><span class="chip delayed">Delayed</span></td><td><div style="display:flex;align-items:center;gap:6px"><div class="prog-wrap"><div class="prog-fill red" style="width:22%"></div></div><span style="font-size:10px;font-family:'DM Mono',monospace;color:var(--text3)">22%</span></div></td></tr>
+              <tr><td class="proj-id">PRJ-005</td><td><div class="proj-name">Mobile App 2.0</div></td><td style="font-size:12px;color:var(--text)">L. Patel</td><td style="font-size:11px;color:var(--text3)">CPO</td><td style="font-size:10px;font-family:'DM Mono',monospace;color:var(--text3)">Dec 25</td><td style="font-size:10px;font-family:'DM Mono',monospace;color:var(--text3)">Jun 26</td><td style="font-size:11px;font-family:'DM Mono',monospace;color:var(--text)">£490K</td><td><span class="chip on-track">On Track</span></td><td><div style="display:flex;align-items:center;gap:6px"><div class="prog-wrap"><div class="prog-fill blue" style="width:55%"></div></div><span style="font-size:10px;font-family:'DM Mono',monospace;color:var(--text3)">55%</span></div></td></tr>
+              <tr><td class="proj-id">PRJ-006</td><td><div class="proj-name">Infra Upgrade</div></td><td style="font-size:12px;color:var(--text)">N. Walsh</td><td style="font-size:11px;color:var(--text3)">CTO</td><td style="font-size:10px;font-family:'DM Mono',monospace;color:var(--text3)">Apr 26</td><td style="font-size:10px;font-family:'DM Mono',monospace;color:var(--text3)">Sep 26</td><td style="font-size:11px;font-family:'DM Mono',monospace;color:var(--text)">£860K</td><td><span class="chip planning">Planning</span></td><td><div style="display:flex;align-items:center;gap:6px"><div class="prog-wrap"><div class="prog-fill green" style="width:5%"></div></div><span style="font-size:10px;font-family:'DM Mono',monospace;color:var(--text3)">5%</span></div></td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- EXECUTIVE -->
+    <div id="view-executive" class="view">
+      <div class="page-header">
+        <div><div class="page-title">Executive View</div><div class="page-sub">Portfolio KPIs · Board-ready summary · Q2 2026</div></div>
+        <div class="header-actions"><button class="btn">Export PDF</button></div>
+      </div>
+      <div class="content">
+        <div class="stat-grid">
+          <div class="stat-card blue"><div class="stat-label">Budget Spent</div><div class="stat-value">£2.1M</div><div class="stat-meta"><span class="delta flat">50% of £4.2M</span></div></div>
+          <div class="stat-card green"><div class="stat-label">Forecast vs Plan</div><div class="stat-value">+4%</div><div class="stat-meta"><span class="delta up">On budget</span></div></div>
+          <div class="stat-card amber"><div class="stat-label">Schedule Variance</div><div class="stat-value">−8d</div><div class="stat-meta"><span class="delta down">2 projects behind</span></div></div>
+          <div class="stat-card green"><div class="stat-label">Benefits Realised</div><div class="stat-value">£680K</div><div class="stat-meta"><span class="delta up">Target: £1.2M</span></div></div>
+        </div>
+        <div class="two-col">
+          <div class="panel">
+            <div class="panel-head"><span class="panel-title">Strategic KPIs</span></div>
+            <div style="padding:14px 18px">
+              <div class="kpi-row"><div class="kpi-name">Digital Transformation</div><div class="kpi-track"><div class="kpi-fill" style="width:62%;background:var(--blue)"></div></div><div class="kpi-val">62%</div></div>
+              <div class="kpi-row"><div class="kpi-name">Customer Experience</div><div class="kpi-track"><div class="kpi-fill" style="width:74%;background:var(--green)"></div></div><div class="kpi-val">74%</div></div>
+              <div class="kpi-row"><div class="kpi-name">Operational Efficiency</div><div class="kpi-track"><div class="kpi-fill" style="width:48%;background:var(--amber)"></div></div><div class="kpi-val">48%</div></div>
+              <div class="kpi-row"><div class="kpi-name">Risk Reduction</div><div class="kpi-track"><div class="kpi-fill" style="width:31%;background:var(--red)"></div></div><div class="kpi-val">31%</div></div>
+              <div class="kpi-row"><div class="kpi-name">Data & Analytics</div><div class="kpi-track"><div class="kpi-fill" style="width:82%;background:var(--teal)"></div></div><div class="kpi-val">82%</div></div>
+            </div>
+          </div>
+          <div class="panel">
+            <div class="panel-head"><span class="panel-title">RAG Status</span></div>
+            <div class="health-rows">
+              <div class="health-item"><div class="health-left"><span class="health-dot" style="background:var(--green)"></span>Customer Portal v3</div><span style="font-size:11px;font-weight:600;color:var(--green)">GREEN</span></div>
+              <div class="health-item"><div class="health-left"><span class="health-dot" style="background:var(--amber)"></span>ERP Migration</div><span style="font-size:11px;font-weight:600;color:var(--amber)">AMBER</span></div>
+              <div class="health-item"><div class="health-left"><span class="health-dot" style="background:var(--green)"></span>Data Platform</div><span style="font-size:11px;font-weight:600;color:var(--green)">GREEN</span></div>
+              <div class="health-item"><div class="health-left"><span class="health-dot" style="background:var(--red)"></span>Security Audit</div><span style="font-size:11px;font-weight:600;color:var(--red)">RED</span></div>
+              <div class="health-item"><div class="health-left"><span class="health-dot" style="background:var(--green)"></span>Mobile App 2.0</div><span style="font-size:11px;font-weight:600;color:var(--green)">GREEN</span></div>
+              <div class="health-item"><div class="health-left"><span class="health-dot" style="background:var(--text3)"></span>Infra Upgrade</div><span style="font-size:11px;font-weight:600;color:var(--text3)">GREY</span></div>
+            </div>
+          </div>
+        </div>
+        <div class="panel">
+          <div class="panel-head"><span class="panel-title">Steering Committee Actions — Apr 11, 2026</span></div>
+          <table class="ptable">
+            <thead><tr><th>#</th><th>Action</th><th>Owner</th><th>Due</th><th>Status</th></tr></thead>
+            <tbody>
+              <tr><td style="font-family:'DM Mono',monospace;font-size:10px;color:var(--text3)">AC-01</td><td style="font-size:12px;color:var(--text)">Approve additional security consultant budget (£45K)</td><td style="font-size:12px;color:var(--text)">CFO</td><td style="font-size:10px;font-family:'DM Mono',monospace;color:var(--text3)">Apr 14</td><td><span class="chip at-risk">Pending</span></td></tr>
+              <tr><td style="font-family:'DM Mono',monospace;font-size:10px;color:var(--text3)">AC-02</td><td style="font-size:12px;color:var(--text)">Confirm ERP go-live date with business stakeholders</td><td style="font-size:12px;color:var(--text)">CTO</td><td style="font-size:10px;font-family:'DM Mono',monospace;color:var(--text3)">Apr 16</td><td><span class="chip on-track">In Progress</span></td></tr>
+              <tr><td style="font-family:'DM Mono',monospace;font-size:10px;color:var(--text3)">AC-03</td><td style="font-size:12px;color:var(--text)">Review and sign off Q2 portfolio progress report</td><td style="font-size:12px;color:var(--text)">COO</td><td style="font-size:10px;font-family:'DM Mono',monospace;color:var(--text3)">Apr 18</td><td><span class="chip planning">Not Started</span></td></tr>
+              <tr><td style="font-family:'DM Mono',monospace;font-size:10px;color:var(--text3)">AC-04</td><td style="font-size:12px;color:var(--text)">Endorse resource reallocation for Security Audit</td><td style="font-size:12px;color:var(--text)">CPO</td><td style="font-size:10px;font-family:'DM Mono',monospace;color:var(--text3)">Apr 12</td><td><span class="chip complete">Complete</span></td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- RAID -->
+    <div id="view-raid" class="view">
+      <div class="page-header">
+        <div><div class="page-title">RAID Log</div><div class="page-sub">Risks · Assumptions · Issues · Dependencies</div></div>
+        <div class="header-actions"><button class="btn btn-primary" onclick="openModal('add-raid')">+ Add Entry</button></div>
+      </div>
+      <div class="raid-tabs">
+        <div class="raid-tab active" onclick="switchRaid('risks',this)">Risks <span class="tab-count">4</span></div>
+        <div class="raid-tab" onclick="switchRaid('assumptions',this)">Assumptions <span class="tab-count">3</span></div>
+        <div class="raid-tab" onclick="switchRaid('issues',this)">Issues <span class="tab-count">5</span></div>
+        <div class="raid-tab" onclick="switchRaid('dependencies',this)">Dependencies <span class="tab-count">3</span></div>
+      </div>
+      <div id="raid-risks" class="raid-section active">
+        <div class="raid-list">
+          <div class="raid-card high"><div class="raid-meta"><span class="raid-title">ERP vendor support contract expiring</span><span class="chip at-risk">HIGH</span></div><div style="font-size:12px;color:var(--text2);margin-top:4px">Vendor support for current ERP module ends Apr 30. Risk of security patches ceasing. Mitigation: expedite Phase 2 go-live.</div><div class="raid-footer"><span class="raid-due">Due: Apr 20, 2026</span><span style="font-size:10px;color:var(--text3)">PRJ-002 · Owner: M. Rivera</span></div></div>
+          <div class="raid-card high"><div class="raid-meta"><span class="raid-title">Security audit resource gap — consultant unavailable</span><span class="chip delayed">CRITICAL</span></div><div style="font-size:12px;color:var(--text2);margin-top:4px">Lead security consultant is on medical leave. No backup identified. Project delayed by 3 weeks. Escalated to steering committee.</div><div class="raid-footer"><span class="raid-due overdue">Overdue: Apr 2, 2026</span><span style="font-size:10px;color:var(--text3)">PRJ-004 · Owner: T. Osei</span></div></div>
+          <div class="raid-card medium"><div class="raid-meta"><span class="raid-title">Data migration dependency unresolved</span><span class="chip at-risk">MEDIUM</span></div><div style="font-size:12px;color:var(--text2);margin-top:4px">Legacy data cleansing team has not confirmed handover date. Risk to Data Platform launch milestone on Apr 30.</div><div class="raid-footer"><span class="raid-due">Due: Apr 25, 2026</span><span style="font-size:10px;color:var(--text3)">PRJ-003 · Owner: J. Kim</span></div></div>
+          <div class="raid-card low"><div class="raid-meta"><span class="raid-title">Mobile API rate limit under peak load</span><span class="chip on-track">LOW</span></div><div style="font-size:12px;color:var(--text2);margin-top:4px">API gateway rate limits may be insufficient for peak load during launch. Monitoring in place; load test scheduled May 5.</div><div class="raid-footer"><span class="raid-due">Due: May 5, 2026</span><span style="font-size:10px;color:var(--text3)">PRJ-005 · Owner: L. Patel</span></div></div>
+        </div>
+      </div>
+      <div id="raid-assumptions" class="raid-section">
+        <div class="raid-list">
+          <div class="raid-card open"><div class="raid-meta"><span class="raid-title">Budget remains unchanged for Q2</span><span class="chip planning">ASSUMPTION</span></div><div style="font-size:12px;color:var(--text2);margin-top:4px">Portfolio budget of £4.2M approved and ring-fenced for Q2. Any re-allocation to require PMO Director sign-off.</div><div class="raid-footer"><span class="raid-due">Validated: Apr 1, 2026</span><span style="font-size:10px;color:var(--text3)">Portfolio · Owner: Sarah P.</span></div></div>
+          <div class="raid-card open"><div class="raid-meta"><span class="raid-title">Third-party API integration available by Apr 15</span><span class="chip planning">ASSUMPTION</span></div><div style="font-size:12px;color:var(--text2);margin-top:4px">External payments provider confirmed API sandbox access by Apr 15. Customer Portal go-live depends on this being true.</div><div class="raid-footer"><span class="raid-due">Review: Apr 15, 2026</span><span style="font-size:10px;color:var(--text3)">PRJ-001 · Owner: A. Chen</span></div></div>
+          <div class="raid-card open"><div class="raid-meta"><span class="raid-title">Existing infra sufficient for new platform load</span><span class="chip planning">ASSUMPTION</span></div><div style="font-size:12px;color:var(--text2);margin-top:4px">Capacity modelling shows current infra handles 3x load increase. Assumption to be tested during Data Platform stress testing.</div><div class="raid-footer"><span class="raid-due">Review: Apr 28, 2026</span><span style="font-size:10px;color:var(--text3)">PRJ-003 · Owner: J. Kim</span></div></div>
+        </div>
+      </div>
+      <div id="raid-issues" class="raid-section">
+        <div class="raid-list">
+          <div class="raid-card high"><div class="raid-meta"><span class="raid-title">UAT environment not provisioned for Portal</span><span class="chip delayed">OPEN</span></div><div style="font-size:12px;color:var(--text2);margin-top:4px">DevOps team has not provisioned UAT environment. Blocking UAT start date Apr 14. Escalated to Head of Engineering.</div><div class="raid-footer"><span class="raid-due overdue">Raised: Apr 6, 2026</span><span style="font-size:10px;color:var(--text3)">PRJ-001 · Owner: A. Chen</span></div></div>
+          <div class="raid-card medium"><div class="raid-meta"><span class="raid-title">ERP test data quality insufficient</span><span class="chip at-risk">IN PROGRESS</span></div><div style="font-size:12px;color:var(--text2);margin-top:4px">Test data for ERP migration has 23% duplicate records. Data team engaged to resolve by Apr 18.</div><div class="raid-footer"><span class="raid-due">Raised: Apr 3, 2026</span><span style="font-size:10px;color:var(--text3)">PRJ-002 · Owner: M. Rivera</span></div></div>
+          <div class="raid-card medium"><div class="raid-meta"><span class="raid-title">Steering committee quorum not met last cycle</span><span class="chip at-risk">OPEN</span></div><div style="font-size:12px;color:var(--text2);margin-top:4px">2 of 5 steering members missed Apr 4 review. Key decisions delayed. Rescheduled to Apr 11.</div><div class="raid-footer"><span class="raid-due">Raised: Apr 4, 2026</span><span style="font-size:10px;color:var(--text3)">Portfolio · Owner: Sarah P.</span></div></div>
+          <div class="raid-card low"><div class="raid-meta"><span class="raid-title">Mobile app push notification integration failing</span><span class="chip at-risk">IN PROGRESS</span></div><div style="font-size:12px;color:var(--text2);margin-top:4px">Firebase integration errors on Android SDK 34. Dev team investigating; workaround in place.</div><div class="raid-footer"><span class="raid-due">Raised: Apr 7, 2026</span><span style="font-size:10px;color:var(--text3)">PRJ-005 · Owner: L. Patel</span></div></div>
+          <div class="raid-card low"><div class="raid-meta"><span class="raid-title">Data Platform documentation incomplete</span><span class="chip on-track">MONITORING</span></div><div style="font-size:12px;color:var(--text2);margin-top:4px">Technical runbook missing 4 sections. Low impact on launch but required for handover to Ops. Due Apr 25.</div><div class="raid-footer"><span class="raid-due">Raised: Apr 5, 2026</span><span style="font-size:10px;color:var(--text3)">PRJ-003 · Owner: J. Kim</span></div></div>
+        </div>
+      </div>
+      <div id="raid-dependencies" class="raid-section">
+        <div class="raid-list">
+          <div class="raid-card open"><div class="raid-meta"><span class="raid-title">Customer Portal depends on Payments API (external)</span><span class="chip planning">EXTERNAL</span></div><div style="font-size:12px;color:var(--text2);margin-top:4px">Launch gated on Stripe payment integration. Deadline Apr 15 for sandbox credentials. SLA agreed with vendor.</div><div class="raid-footer"><span class="raid-due">Due: Apr 15, 2026</span><span style="font-size:10px;color:var(--text3)">PRJ-001 → External · Owner: A. Chen</span></div></div>
+          <div class="raid-card open"><div class="raid-meta"><span class="raid-title">ERP depends on Data Platform master data feed</span><span class="chip planning">INTERNAL</span></div><div style="font-size:12px;color:var(--text2);margin-top:4px">ERP Phase 2 requires clean master data from Data Platform. Feeds must be live by Apr 22. Currently at risk due to PRJ-003 data delay.</div><div class="raid-footer"><span class="raid-due">Due: Apr 22, 2026</span><span style="font-size:10px;color:var(--text3)">PRJ-002 → PRJ-003 · Owner: M. Rivera</span></div></div>
+          <div class="raid-card low"><div class="raid-meta"><span class="raid-title">Infra Upgrade depends on Security Audit completion</span><span class="chip on-track">INTERNAL</span></div><div style="font-size:12px;color:var(--text2);margin-top:4px">PRJ-006 scope depends on findings from security audit. Cannot baseline architecture until audit complete. Currently blocked.</div><div class="raid-footer"><span class="raid-due">Due: May 15, 2026</span><span style="font-size:10px;color:var(--text3)">PRJ-006 → PRJ-004 · Owner: N. Walsh</span></div></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- RESOURCES -->
+    <div id="view-resources" class="view">
+      <div class="page-header">
+        <div><div class="page-title">Resource Tracker</div><div class="page-sub">Utilisation · Allocation · Capacity</div></div>
+        <div class="header-actions"><button class="btn btn-primary" onclick="openModal('add-resource')">+ Add Resource</button></div>
+      </div>
+      <div class="content">
+        <div class="stat-grid" style="grid-template-columns:repeat(2,1fr);max-width:500px;margin-bottom:22px">
+          <div class="stat-card blue"><div class="stat-label">Total Headcount</div><div class="stat-value">24</div><div class="stat-meta"><span class="delta flat">across 6 projects</span></div></div>
+          <div class="stat-card amber"><div class="stat-label">Over-utilised</div><div class="stat-value">4</div><div class="stat-meta"><span class="delta down">&gt;100% capacity</span></div></div>
+        </div>
+        <div class="two-col">
+          <div class="panel">
+            <div class="panel-head"><span class="panel-title">Resource Utilisation</span></div>
+            <div style="padding:0 18px">
+              <div class="resource-row"><div class="res-avatar" style="background:#1a2a4a;color:var(--blue)">AC</div><div class="res-info"><div class="res-name">Alice Chen</div><div class="res-role">PM · Customer Portal</div></div><div class="res-util"><div class="util-pct" style="color:var(--green)">85%</div><div class="util-bar"><div class="util-fill" style="width:85%;background:var(--green)"></div></div></div></div>
+              <div class="resource-row"><div class="res-avatar" style="background:#2a1a2a;color:var(--purple)">MR</div><div class="res-info"><div class="res-name">Marco Rivera</div><div class="res-role">PM · ERP Migration</div></div><div class="res-util"><div class="util-pct" style="color:var(--amber)">110%</div><div class="util-bar"><div class="util-fill" style="width:100%;background:var(--amber)"></div></div></div></div>
+              <div class="resource-row"><div class="res-avatar" style="background:#1a2a1a;color:var(--green)">JK</div><div class="res-info"><div class="res-name">Jamie Kim</div><div class="res-role">Tech Lead · Data Platform</div></div><div class="res-util"><div class="util-pct" style="color:var(--green)">90%</div><div class="util-bar"><div class="util-fill" style="width:90%;background:var(--green)"></div></div></div></div>
+              <div class="resource-row"><div class="res-avatar" style="background:#2a1a1a;color:var(--red)">TO</div><div class="res-info"><div class="res-name">Theo Osei</div><div class="res-role">PM · Security Audit</div></div><div class="res-util"><div class="util-pct" style="color:var(--red)">120%</div><div class="util-bar"><div class="util-fill" style="width:100%;background:var(--red)"></div></div></div></div>
+              <div class="resource-row"><div class="res-avatar" style="background:#1a2535;color:var(--teal)">LP</div><div class="res-info"><div class="res-name">Lena Patel</div><div class="res-role">PM · Mobile App 2.0</div></div><div class="res-util"><div class="util-pct" style="color:var(--green)">75%</div><div class="util-bar"><div class="util-fill" style="width:75%;background:var(--green)"></div></div></div></div>
+              <div class="resource-row"><div class="res-avatar" style="background:#1e1e2e;color:var(--purple)">NW</div><div class="res-info"><div class="res-name">Niall Walsh</div><div class="res-role">PM · Infra Upgrade</div></div><div class="res-util"><div class="util-pct" style="color:var(--text2)">40%</div><div class="util-bar"><div class="util-fill" style="width:40%;background:var(--text3)"></div></div></div></div>
+              <div class="resource-row"><div class="res-avatar" style="background:#1a2a1a;color:var(--green)">RB</div><div class="res-info"><div class="res-name">Rosa Barbosa</div><div class="res-role">BA · Customer Portal</div></div><div class="res-util"><div class="util-pct" style="color:var(--amber)">105%</div><div class="util-bar"><div class="util-fill" style="width:100%;background:var(--amber)"></div></div></div></div>
+              <div class="resource-row"><div class="res-avatar" style="background:#2a2a1a;color:var(--amber)">SK</div><div class="res-info"><div class="res-name">Sam Kwon</div><div class="res-role">Dev · ERP + Data</div></div><div class="res-util"><div class="util-pct" style="color:var(--red)">115%</div><div class="util-bar"><div class="util-fill" style="width:100%;background:var(--red)"></div></div></div></div>
+            </div>
+          </div>
+          <div style="display:flex;flex-direction:column;gap:16px">
+            <div class="panel">
+              <div class="panel-head"><span class="panel-title">Allocation by Project</span></div>
+              <div style="padding:14px 18px">
+                <div class="kpi-row"><div class="kpi-name">Customer Portal</div><div class="kpi-track"><div class="kpi-fill" style="width:33%;background:var(--blue)"></div></div><div class="kpi-val" style="color:var(--blue)">8 FTE</div></div>
+                <div class="kpi-row"><div class="kpi-name">ERP Migration</div><div class="kpi-track"><div class="kpi-fill" style="width:25%;background:var(--amber)"></div></div><div class="kpi-val" style="color:var(--amber)">6 FTE</div></div>
+                <div class="kpi-row"><div class="kpi-name">Data Platform</div><div class="kpi-track"><div class="kpi-fill" style="width:21%;background:var(--green)"></div></div><div class="kpi-val" style="color:var(--green)">5 FTE</div></div>
+                <div class="kpi-row"><div class="kpi-name">Security Audit</div><div class="kpi-track"><div class="kpi-fill" style="width:8%;background:var(--red)"></div></div><div class="kpi-val" style="color:var(--red)">2 FTE</div></div>
+                <div class="kpi-row"><div class="kpi-name">Mobile App 2.0</div><div class="kpi-track"><div class="kpi-fill" style="width:13%;background:var(--teal)"></div></div><div class="kpi-val" style="color:var(--teal)">3 FTE</div></div>
+              </div>
+            </div>
+            <div class="panel">
+              <div class="panel-head"><span class="panel-title">Capacity Alerts</span></div>
+              <div style="padding:12px 18px">
+                <div class="alert-box alert-red"><div style="font-size:12px;font-weight:500;color:var(--red)">⚠ T. Osei at 120% — reassignment needed</div><div style="font-size:11px;color:var(--text3);margin-top:3px">Security Audit PM stretched across 2 additional BAU duties</div></div>
+                <div class="alert-box alert-amber"><div style="font-size:12px;font-weight:500;color:var(--amber)">⚠ S. Kwon at 115% — schedule conflict</div><div style="font-size:11px;color:var(--text3);margin-top:3px">Split allocation across ERP and Data Platform unsustainable</div></div>
+                <div class="alert-box alert-amber"><div style="font-size:12px;font-weight:500;color:var(--amber)">⚠ M. Rivera at 110% — monitor closely</div><div style="font-size:11px;color:var(--text3);margin-top:3px">ERP at-risk status adding unplanned workload to PM</div></div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- MILESTONES -->
+    <div id="view-milestones" class="view">
+      <div class="page-header">
+        <div><div class="page-title">Milestones</div><div class="page-sub">Q2 2026 delivery checkpoints</div></div>
+        <div class="header-actions"><button class="btn btn-primary" onclick="openModal('add-milestone')">+ Add Milestone</button></div>
+      </div>
+      <div class="content">
+        <div class="panel">
+          <table class="ptable">
+            <thead><tr><th>Milestone</th><th>Project</th><th>Owner</th><th>Due Date</th><th>Status</th><th>Notes</th></tr></thead>
+            <tbody>
+              <tr><td style="font-size:12px;color:var(--text);font-weight:500">Portal UAT Sign-off</td><td style="font-size:11px;color:var(--text3)">PRJ-001</td><td style="font-size:12px;color:var(--text)">A. Chen</td><td style="font-size:11px;font-family:'DM Mono',monospace;color:var(--blue)">Apr 18</td><td><span class="chip on-track">On Track</span></td><td style="font-size:11px;color:var(--text2)">UAT env being provisioned</td></tr>
+              <tr><td style="font-size:12px;color:var(--text);font-weight:500">ERP Phase 2 Go-Live</td><td style="font-size:11px;color:var(--text3)">PRJ-002</td><td style="font-size:12px;color:var(--text)">M. Rivera</td><td style="font-size:11px;font-family:'DM Mono',monospace;color:var(--amber)">Apr 22</td><td><span class="chip at-risk">At Risk</span></td><td style="font-size:11px;color:var(--text2)">Data quality issue unresolved</td></tr>
+              <tr><td style="font-size:12px;color:var(--text);font-weight:500">Data Platform Launch</td><td style="font-size:11px;color:var(--text3)">PRJ-003</td><td style="font-size:12px;color:var(--text)">J. Kim</td><td style="font-size:11px;font-family:'DM Mono',monospace;color:var(--text)">Apr 30</td><td><span class="chip on-track">On Track</span></td><td style="font-size:11px;color:var(--text2)">Docs outstanding</td></tr>
+              <tr><td style="font-size:12px;color:var(--text);font-weight:500">Security Compliance Review</td><td style="font-size:11px;color:var(--text3)">PRJ-004</td><td style="font-size:12px;color:var(--text)">T. Osei</td><td style="font-size:11px;font-family:'DM Mono',monospace;color:var(--red)">May 2</td><td><span class="chip delayed">Delayed</span></td><td style="font-size:11px;color:var(--text2)">Blocked by resource gap</td></tr>
+              <tr><td style="font-size:12px;color:var(--text);font-weight:500">Mobile App Beta Release</td><td style="font-size:11px;color:var(--text3)">PRJ-005</td><td style="font-size:12px;color:var(--text)">L. Patel</td><td style="font-size:11px;font-family:'DM Mono',monospace;color:var(--text)">May 10</td><td><span class="chip on-track">On Track</span></td><td style="font-size:11px;color:var(--text2)">Push notif bug tracked</td></tr>
+              <tr><td style="font-size:12px;color:var(--text);font-weight:500">Infra Architecture Sign-off</td><td style="font-size:11px;color:var(--text3)">PRJ-006</td><td style="font-size:12px;color:var(--text)">N. Walsh</td><td style="font-size:11px;font-family:'DM Mono',monospace;color:var(--text3)">May 15</td><td><span class="chip planning">Planning</span></td><td style="font-size:11px;color:var(--text2)">Blocked by PRJ-004</td></tr>
+              <tr><td style="font-size:12px;color:var(--text);font-weight:500">Portal Production Launch</td><td style="font-size:11px;color:var(--text3)">PRJ-001</td><td style="font-size:12px;color:var(--text)">A. Chen</td><td style="font-size:11px;font-family:'DM Mono',monospace;color:var(--text)">May 20</td><td><span class="chip on-track">On Track</span></td><td style="font-size:11px;color:var(--text2)">Payments API gating</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- DECISIONS -->
+    <div id="view-decisions" class="view">
+      <div class="page-header">
+        <div><div class="page-title">Decision Log</div><div class="page-sub">Source of truth for all PMO decisions</div></div>
+        <div class="header-actions"><button class="btn btn-primary" onclick="openModal('add-decision')">+ Log Decision</button></div>
+      </div>
+      <div class="content">
+        <div class="panel">
+          <table class="ptable">
+            <thead><tr><th>ID</th><th>Decision</th><th>Rationale</th><th>Made by</th><th>Date</th><th>Status</th></tr></thead>
+            <tbody>
+              <tr><td style="font-family:'DM Mono',monospace;font-size:10px;color:var(--text3)">D-014</td><td style="font-size:12px;color:var(--text);font-weight:500">Proceed with ERP Phase 2 despite data quality issue</td><td style="font-size:11px;color:var(--text2);max-width:180px">Business risk of delay outweighs technical risk. Mitigations agreed.</td><td style="font-size:12px;color:var(--text)">Steering</td><td style="font-size:10px;font-family:'DM Mono',monospace;color:var(--text3)">Apr 4</td><td><span class="chip on-track">Active</span></td></tr>
+              <tr><td style="font-family:'DM Mono',monospace;font-size:10px;color:var(--text3)">D-013</td><td style="font-size:12px;color:var(--text);font-weight:500">Defer infra upgrade scope until security audit complete</td><td style="font-size:11px;color:var(--text2);max-width:180px">Architecture cannot be finalized without security findings.</td><td style="font-size:12px;color:var(--text)">CTO</td><td style="font-size:10px;font-family:'DM Mono',monospace;color:var(--text3)">Apr 2</td><td><span class="chip on-track">Active</span></td></tr>
+              <tr><td style="font-family:'DM Mono',monospace;font-size:10px;color:var(--text3)">D-012</td><td style="font-size:12px;color:var(--text);font-weight:500">Adopt Stripe as sole payments provider for Portal</td><td style="font-size:11px;color:var(--text2);max-width:180px">Stripe SLA and support best aligned with Portal needs.</td><td style="font-size:12px;color:var(--text)">CTO / CPO</td><td style="font-size:10px;font-family:'DM Mono',monospace;color:var(--text3)">Mar 28</td><td><span class="chip on-track">Active</span></td></tr>
+              <tr><td style="font-family:'DM Mono',monospace;font-size:10px;color:var(--text3)">D-011</td><td style="font-size:12px;color:var(--text);font-weight:500">Q2 portfolio budget ringfenced at £4.2M</td><td style="font-size:11px;color:var(--text2);max-width:180px">Board approved. No reallocation without PMO Director sign-off.</td><td style="font-size:12px;color:var(--text)">CFO / Board</td><td style="font-size:10px;font-family:'DM Mono',monospace;color:var(--text3)">Mar 25</td><td><span class="chip on-track">Active</span></td></tr>
+              <tr><td style="font-family:'DM Mono',monospace;font-size:10px;color:var(--text3)">D-010</td><td style="font-size:12px;color:var(--text);font-weight:500">Security Audit scope expanded to include cloud perimeter</td><td style="font-size:11px;color:var(--text2);max-width:180px">Recent threat intel warranted broader scope. Cost delta approved.</td><td style="font-size:12px;color:var(--text)">CISO</td><td style="font-size:10px;font-family:'DM Mono',monospace;color:var(--text3)">Mar 18</td><td><span class="chip at-risk">Under review</span></td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- NOTES -->
+    <div id="view-notes" class="view">
+      <div class="page-header">
+        <div><div class="page-title">PMO Notes</div><div class="page-sub">Meeting notes · Observations · Weekly summaries</div></div>
+        <div class="header-actions"><button class="btn btn-primary" onclick="openModal('add-note')">+ Add Note</button></div>
+      </div>
+      <div class="notes-list">
+        <div class="note-card"><div class="note-header"><span class="note-author">Sarah P.</span><span class="note-time">Apr 9, 2026 · 09:30</span></div><div style="font-size:11px;font-weight:600;color:var(--text3);text-transform:uppercase;letter-spacing:.3px">Steering Committee Pre-read · Apr 11</div><div class="note-text">Portfolio remains broadly on track. Two escalations required: Security Audit resource gap needs CFO budget approval (£45K). ERP go-live date to be confirmed with business owners. Recommend focus on T. Osei capacity issue as priority action item for the committee.</div></div>
+        <div class="note-card"><div class="note-header"><span class="note-author">J. Kim</span><span class="note-time">Apr 8, 2026 · 14:15</span></div><div style="font-size:11px;font-weight:600;color:var(--text3);text-transform:uppercase;letter-spacing:.3px">Data Platform · Phase 3 Complete</div><div class="note-text">Phase 3 ingestion pipelines signed off by data ops team. Documentation is 80% complete — 4 sections remaining, assigned to D. Park by Apr 25. No blockers for Apr 30 launch barring legacy data handover confirmation.</div></div>
+        <div class="note-card"><div class="note-header"><span class="note-author">M. Rivera</span><span class="note-time">Apr 7, 2026 · 11:00</span></div><div style="font-size:11px;font-weight:600;color:var(--text3);text-transform:uppercase;letter-spacing:.3px">ERP Migration · Weekly Status</div><div class="note-text">Test data quality issue (23% duplicates) identified in Sprint 8. Engaging data team to resolve by Apr 18. Vendor support expiry risk escalated. Business sponsor confirmed willingness to accept April 22 go-live even with some manual workarounds.</div></div>
+        <div class="note-card"><div class="note-header"><span class="note-author">T. Osei</span><span class="note-time">Apr 6, 2026 · 16:45</span></div><div style="font-size:11px;font-weight:600;color:var(--text3);text-transform:uppercase;letter-spacing:.3px">Security Audit · Critical Update</div><div class="note-text">Confirmed that lead consultant K. Stewart is on extended medical leave until mid-May at earliest. No replacement has been sourced. I am carrying the PM and BA role simultaneously at 120% capacity. Requesting immediate PMO Director intervention to resolve resourcing before Apr 12.</div></div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<!-- Modal -->
+<div class="modal-bg" id="modal-bg">
+  <div class="modal">
+    <button class="modal-close" onclick="closeModal()">×</button>
+    <div id="modal-content"></div>
+  </div>
+</div>
+
+<script>
+function showView(name, btn) {
+  document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
+  document.getElementById('view-'+name).classList.add('active');
+  document.querySelectorAll('.nav-item').forEach(b => b.classList.remove('active'));
+  if(btn) btn.classList.add('active');
+}
+
+function switchRaid(type, el) {
+  document.querySelectorAll('.raid-tab').forEach(t => t.classList.remove('active'));
+  el.classList.add('active');
+  document.querySelectorAll('.raid-section').forEach(s => s.classList.remove('active'));
+  document.getElementById('raid-'+type).classList.add('active');
+}
+
+const modals = {
+  'add-project': `<div class="modal-title">New Project</div>
+    <div class="form-field"><label class="form-label">Project Name</label><input class="form-input" placeholder="e.g. Customer Portal v3"/></div>
+    <div class="form-field"><label class="form-label">Project Manager</label><input class="form-input" placeholder="Full name"/></div>
+    <div class="form-grid-2"><div class="form-field"><label class="form-label">Sponsor</label><input class="form-input" placeholder="e.g. CTO"/></div><div class="form-field"><label class="form-label">Status</label><select class="form-select"><option>Planning</option><option>On Track</option><option>At Risk</option><option>Delayed</option></select></div></div>
+    <div class="form-grid-2"><div class="form-field"><label class="form-label">Start Date</label><input class="form-input" type="date"/></div><div class="form-field"><label class="form-label">End Date</label><input class="form-input" type="date"/></div></div>
+    <div class="form-field"><label class="form-label">Budget (£)</label><input class="form-input" placeholder="e.g. 500000"/></div>
+    <div class="modal-actions"><button class="btn" onclick="closeModal()">Cancel</button><button class="btn btn-primary" onclick="closeModal()">Save Project</button></div>`,
+  'add-raid': `<div class="modal-title">New RAID Entry</div>
+    <div class="form-grid-2"><div class="form-field"><label class="form-label">Type</label><select class="form-select"><option>Risk</option><option>Assumption</option><option>Issue</option><option>Dependency</option></select></div><div class="form-field"><label class="form-label">Severity</label><select class="form-select"><option>Critical</option><option>High</option><option>Medium</option><option>Low</option></select></div></div>
+    <div class="form-field"><label class="form-label">Title</label><input class="form-input" placeholder="Brief description"/></div>
+    <div class="form-field"><label class="form-label">Detail / Mitigation</label><textarea class="form-input" rows="3" placeholder="Full description, impact, mitigation..."></textarea></div>
+    <div class="form-grid-2"><div class="form-field"><label class="form-label">Project</label><select class="form-select"><option>Portfolio</option><option>PRJ-001</option><option>PRJ-002</option><option>PRJ-003</option><option>PRJ-004</option><option>PRJ-005</option><option>PRJ-006</option></select></div><div class="form-field"><label class="form-label">Owner</label><input class="form-input" placeholder="Full name"/></div></div>
+    <div class="form-field"><label class="form-label">Due Date</label><input class="form-input" type="date"/></div>
+    <div class="modal-actions"><button class="btn" onclick="closeModal()">Cancel</button><button class="btn btn-primary" onclick="closeModal()">Log Entry</button></div>`,
+  'add-resource': `<div class="modal-title">Add Resource</div>
+    <div class="form-field"><label class="form-label">Full Name</label><input class="form-input" placeholder="First Last"/></div>
+    <div class="form-grid-2"><div class="form-field"><label class="form-label">Role</label><input class="form-input" placeholder="e.g. Senior Developer"/></div><div class="form-field"><label class="form-label">Project</label><select class="form-select"><option>PRJ-001</option><option>PRJ-002</option><option>PRJ-003</option><option>PRJ-004</option><option>PRJ-005</option><option>PRJ-006</option></select></div></div>
+    <div class="form-field"><label class="form-label">Utilisation (%)</label><input class="form-input" type="number" placeholder="80" min="0" max="200"/></div>
+    <div class="modal-actions"><button class="btn" onclick="closeModal()">Cancel</button><button class="btn btn-primary" onclick="closeModal()">Add Resource</button></div>`,
+  'add-decision': `<div class="modal-title">Log Decision</div>
+    <div class="form-field"><label class="form-label">Decision</label><input class="form-input" placeholder="What was decided?"/></div>
+    <div class="form-field"><label class="form-label">Rationale</label><textarea class="form-input" rows="2" placeholder="Why was this decided?"></textarea></div>
+    <div class="form-grid-2"><div class="form-field"><label class="form-label">Decision Maker</label><input class="form-input" placeholder="e.g. Steering, CTO"/></div><div class="form-field"><label class="form-label">Date</label><input class="form-input" type="date"/></div></div>
+    <div class="modal-actions"><button class="btn" onclick="closeModal()">Cancel</button><button class="btn btn-primary" onclick="closeModal()">Save</button></div>`,
+  'add-milestone': `<div class="modal-title">Add Milestone</div>
+    <div class="form-field"><label class="form-label">Milestone Name</label><input class="form-input" placeholder="e.g. UAT Sign-off"/></div>
+    <div class="form-grid-2"><div class="form-field"><label class="form-label">Project</label><select class="form-select"><option>PRJ-001</option><option>PRJ-002</option><option>PRJ-003</option><option>PRJ-004</option><option>PRJ-005</option><option>PRJ-006</option></select></div><div class="form-field"><label class="form-label">Owner</label><input class="form-input" placeholder="PM name"/></div></div>
+    <div class="form-grid-2"><div class="form-field"><label class="form-label">Due Date</label><input class="form-input" type="date"/></div><div class="form-field"><label class="form-label">Status</label><select class="form-select"><option>On Track</option><option>At Risk</option><option>Delayed</option><option>Complete</option><option>Planning</option></select></div></div>
+    <div class="modal-actions"><button class="btn" onclick="closeModal()">Cancel</button><button class="btn btn-primary" onclick="closeModal()">Add Milestone</button></div>`,
+  'add-note': `<div class="modal-title">Add PMO Note</div>
+    <div class="form-field"><label class="form-label">Subject</label><input class="form-input" placeholder="e.g. Weekly status · ERP Migration"/></div>
+    <div class="form-field"><label class="form-label">Note</label><textarea class="form-input" rows="5" placeholder="Enter meeting notes, observations or action items..."></textarea></div>
+    <div class="form-grid-2"><div class="form-field"><label class="form-label">Author</label><input class="form-input" value="Sarah P."/></div><div class="form-field"><label class="form-label">Project</label><select class="form-select"><option>Portfolio</option><option>PRJ-001</option><option>PRJ-002</option><option>PRJ-003</option><option>PRJ-004</option><option>PRJ-005</option><option>PRJ-006</option></select></div></div>
+    <div class="modal-actions"><button class="btn" onclick="closeModal()">Cancel</button><button class="btn btn-primary" onclick="closeModal()">Save Note</button></div>`
+};
+
+function openModal(type) {
+  document.getElementById('modal-content').innerHTML = modals[type] || '';
+  document.getElementById('modal-bg').classList.add('open');
+}
+function closeModal() { document.getElementById('modal-bg').classList.remove('open'); }
+document.getElementById('modal-bg').addEventListener('click', e => { if(e.target.id==='modal-bg') closeModal(); });
+</script>
+</body>
+</html>
